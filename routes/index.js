@@ -12,8 +12,6 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/getImages", (req, res) => {});
-
 router.post("/loadCSV", (req, res) => {
   fs.createReadStream("data.csv")
     .pipe(csv())
@@ -48,6 +46,55 @@ router.post("/loadCSV", (req, res) => {
     err: null,
     message: "CSV file successfully pushed to db"
   });
+});
+
+router.get("/getImages", (req, res) => {
+  if (req.session.images) {
+    let images = req.session.images;
+    if (images.length > 5) {
+      // only enter if we have sufficient images
+      let imageArr = [];
+
+      for (var i = 0; i < 5; i++) {
+        const index = Math.floor(Math.random() * images.length); // get a random index
+        imageArr[i] = images[index]; // add image at random index to return array
+        images.splice(index, 1); // remove this image from original image array
+      }
+
+      req.session.images = images;
+      req.session.count++
+      return res.status(200).send({
+        images: imageArr,
+        count: req.session.count
+      });
+    }
+  } else {
+    Image.find({}, (err, results) => {
+      if (err != null) {
+        console.log(err);
+        return
+      }
+      let images = results;
+      if (images.length > 5) {
+        // only enter if we have sufficient images
+        let imageArr = [];
+  
+        for (var i = 0; i < 5; i++) {
+          const index = Math.floor(Math.random() * images.length); // get a random index
+          imageArr[i] = images[index]; // add image at random index to return array
+          images.splice(index, 1); // remove this image from original image array
+        }
+  
+        req.session.images = images;
+        req.session.count = 1;
+        return res.status(200).send({
+          images: imageArr,
+          count: req.session.count
+        });
+      }
+    })
+  }
+
 });
 
 module.exports = router;
