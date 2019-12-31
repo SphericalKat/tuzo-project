@@ -139,6 +139,10 @@ router.post(
       req.session.virtImage = req.session.virtImage.map(
         (num, idx) => (num += runTotal[idx])
       );
+
+      if (req.session.count === 5) {
+        req.session.done = true;
+      }
     }
 
     return res.status(200).send({ message: "Successfully set results" });
@@ -149,6 +153,14 @@ router.get("/getVirtImage", (req, res) => {
   if (!req.session.virtImage) {
     return res.status(404).send({ message: "You haven't set any results yet" });
   }
+
+  if (!req.session.done) {
+    return res
+      .status(404)
+      .send({ message: "You haven't completed 25 images yet" });
+  }
+
+  req.session.virtImage = req.session.virtImage.map(num => num / 25);
 
   return res.status(200).send({ virt_image: req.session.virtImage });
 });
