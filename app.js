@@ -1,5 +1,6 @@
 const Express = require("express");
 const Session = require("express-session");
+const bodyParser = require("body-parser");
 const routes = require("./routes/index"); // import router
 require("dotenv").config();
 
@@ -14,6 +15,8 @@ const session = Session({
 const app = Express();
 
 // use middleware and router
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json())
 app.use(session);
 app.use("/", routes);
 
