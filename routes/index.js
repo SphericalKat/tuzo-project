@@ -6,9 +6,10 @@ const mongoose = require("mongoose");
 const imageSchema = require("../model/images_schema");
 const Image = mongoose.model("Image", imageSchema);
 const fs = require("fs");
+const ms = require("multisort");
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", (_req, res) => {
   res.send({
     result: "Success"
   });
@@ -160,9 +161,42 @@ router.get("/getVirtImage", (req, res) => {
       .send({ message: "You haven't completed 25 images yet" });
   }
 
-  req.session.virtImage = req.session.virtImage.map(num => num / 25);
+  const retImg = req.session.virtImage.map(num => num / 25);
 
-  return res.status(200).send({ virt_image: req.session.virtImage });
+  return res.status(200).send({ virt_image: retImg });
 });
+
+router.get("/getImgDist", (req, res) => {
+  if (!req.session.done) {
+    return res
+      .status(404)
+      .send({ message: "You have not finished 25 images yet" });
+  }
+
+  const retImg = req.session.virtImage.map(num => num / 25);
+
+  const remainingImages = req.session.images;
+  for (var i = 0; i < remainingImages.length; i++) {
+    const dist = getVectorDistance(remainingImages[i].attributes, retImg);
+    remainingImages[i].distance = dist;
+  }
+
+  remainingImages.sort((a, b) => {
+    return a.distance - b.distance;
+  });
+
+  res.status(200).send({
+    sorted_images: remainingImages
+  });
+});
+
+function getVectorDistance(img1, img2) {
+  let sum = 0;
+  for (var i = 0; i < img2.length; i++) {
+    sum += Math.pow(img1[i] - img2[i], 2);
+  }
+
+  return Math.sqrt(sum);
+}
 
 module.exports = router;
