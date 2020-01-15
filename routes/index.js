@@ -115,6 +115,7 @@ router.post(
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log(req.body);
       return res.status(422).send({ errors: errors.array() });
     }
 

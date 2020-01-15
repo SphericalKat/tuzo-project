@@ -1,6 +1,7 @@
 const Express = require("express");
 const Session = require("express-session");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const routes = require("./routes/index"); // import router
 require("dotenv").config();
 
@@ -15,8 +16,15 @@ const session = Session({
 const app = Express();
 
 // use middleware and router
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json())
+app.use(
+  cors({
+    origin: 'http://localhost:40709',
+    preflightContinue: true,
+    credentials: true
+  })
+);
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(session);
 app.use("/", routes);
 
